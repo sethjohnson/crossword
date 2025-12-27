@@ -264,6 +264,84 @@ CREATE TABLE puzzles (
 
 ---
 
+## ✅ Validation Strategy
+
+### Library: Zod
+
+Use **Zod** for schema validation with TypeScript type inference:
+- Define schema once → get runtime validation AND TypeScript types
+- Mature ecosystem, excellent documentation
+- Handles complex nested structures (like iPUZ) elegantly
+
+### When to Use What
+
+| Entry Point | Approach | Why |
+|-------------|----------|-----|
+| iPUZ upload (`POST /api/puzzle`) | **Full Zod schema** | Runs once per upload, complexity justified |
+| WebSocket cell changes | **Simple `if` checks** | Runs constantly, must be fast |
+| Redis reads | **Trust (we wrote it)** | Optional sanity checks |
+
+### Example: iPUZ Validation (Zod)
+
+```typescript
+import { z } from 'zod';
+
+const CellSchema = z.union([
+  z.literal('#'),  // block
+  z.number(),      // clue number
+  z.string(),      // empty or letter
+]);
+
+const PuzzleSchema = z.object({
+  version: z.string(),
+  kind: z.array(z.string()),
+  dimensions: z.object({
+    width: z.number().min(1).max(30),
+    height: z.number().min(1).max(30),
+  }),
+  puzzle: z.array(z.array(CellSchema)),
+  solution: z.array(z.array(z.string())).optional(),
+  clues: z.object({
+    Across: z.array(z.tuple([z.number(), z.string()])),
+    Down: z.array(z.tuple([z.number(), z.string()])),
+  }),
+});
+
+type Puzzle = z.infer<typeof PuzzleSchema>;
+```
+
+### Example: WebSocket Validation (Simple)
+
+```typescript
+// Fast validation for high-frequency events
+function isValidCellChange(data: unknown, width: number, height: number): boolean {
+  if (typeof data !== 'object' || data === null) return false;
+  const { row, col, value } = data as Record<string, unknown>;
+  return (
+    Number.isInteger(row) && (row as number) >= 0 && (row as number) < height &&
+    Number.isInteger(col) && (col as number) >= 0 && (col as number) < width &&
+    typeof value === 'string' && /^[A-Z]?$/.test(value)
+  );
+}
+```
+
+### Shared Types Architecture
+
+Zod schemas can be shared between frontend and backend:
+
+```
+packages/
+├── shared/
+│   ├── schemas/
+│   │   ├── puzzle.ts    ← Zod schemas
+│   │   └── events.ts    ← WebSocket event types
+│   └── package.json
+├── server/              ← imports from @crossword/shared
+└── client/              ← imports from @crossword/shared
+```
+
+---
+
 ## 📦 Data Models
 
 ### Puzzle (from iPUZ)
