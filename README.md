@@ -53,7 +53,7 @@ A real-time collaborative crossword puzzle app for friends to solve puzzles toge
 - Reactive by default, no virtual DOM
 - Small bundle sizes (~10kb vs React's ~40kb+)
 - Built-in transitions and animations
-- SvelteKit for routing and SSR if needed later
+- Hash-based routing (`#puzzle/abc123`) — simple SPA, no SSR needed
 
 **Bulma** - CSS-only framework (no JS dependencies)
 - Clean, modern aesthetic out of the box
@@ -66,7 +66,8 @@ Frontend Stack:
 ├── Svelte 5 (with runes)
 ├── Bulma CSS
 ├── TypeScript
-└── Vite (build tool)
+├── Vite (build tool)
+└── Hash-based routing (no SvelteKit)
 ```
 
 ---
@@ -268,24 +269,26 @@ CREATE TABLE puzzles (
 
 ### Library: Zod
 
-Use **Zod** for schema validation with TypeScript type inference:
+Use **Zod** for all schema validation:
 - Define schema once → get runtime validation AND TypeScript types
-- Mature ecosystem, excellent documentation
+- Consistent validation approach across the entire codebase
 - Handles complex nested structures (like iPUZ) elegantly
+- For MVP, consistency > micro-optimization
 
-### When to Use What
+### Validation Points
 
-| Entry Point | Approach | Why |
-|-------------|----------|-----|
-| iPUZ upload (`POST /api/puzzle`) | **Full Zod schema** | Runs once per upload, complexity justified |
-| WebSocket cell changes | **Simple `if` checks** | Runs constantly, must be fast |
-| Redis reads | **Trust (we wrote it)** | Optional sanity checks |
+| Entry Point | Schema |
+|-------------|--------|
+| iPUZ upload (`POST /api/puzzle`) | `PuzzleSchema` — full iPUZ structure |
+| WebSocket cell change | `CellChangeSchema` — position + value |
+| WebSocket cursor move | `CursorMoveSchema` — position |
 
-### Example: iPUZ Validation (Zod)
+### Example Schemas
 
 ```typescript
 import { z } from 'zod';
 
+// iPUZ puzzle structure
 const CellSchema = z.union([
   z.literal('#'),  // block
   z.number(),      // clue number
@@ -307,34 +310,33 @@ const PuzzleSchema = z.object({
   }),
 });
 
+// WebSocket events
+const CellChangeSchema = z.object({
+  row: z.number().int().min(0),
+  col: z.number().int().min(0),
+  value: z.string().regex(/^[A-Z]?$/),  // single letter or empty
+});
+
+const CursorMoveSchema = z.object({
+  row: z.number().int().min(0),
+  col: z.number().int().min(0),
+});
+
+// Infer types from schemas
 type Puzzle = z.infer<typeof PuzzleSchema>;
-```
-
-### Example: WebSocket Validation (Simple)
-
-```typescript
-// Fast validation for high-frequency events
-function isValidCellChange(data: unknown, width: number, height: number): boolean {
-  if (typeof data !== 'object' || data === null) return false;
-  const { row, col, value } = data as Record<string, unknown>;
-  return (
-    Number.isInteger(row) && (row as number) >= 0 && (row as number) < height &&
-    Number.isInteger(col) && (col as number) >= 0 && (col as number) < width &&
-    typeof value === 'string' && /^[A-Z]?$/.test(value)
-  );
-}
+type CellChange = z.infer<typeof CellChangeSchema>;
 ```
 
 ### Shared Types Architecture
 
-Zod schemas can be shared between frontend and backend:
+Zod schemas live in `packages/shared` and are imported by both client and server:
 
 ```
 packages/
 ├── shared/
 │   ├── schemas/
-│   │   ├── puzzle.ts    ← Zod schemas
-│   │   └── events.ts    ← WebSocket event types
+│   │   ├── puzzle.ts    ← iPUZ schemas
+│   │   └── events.ts    ← WebSocket event schemas
 │   └── package.json
 ├── server/              ← imports from @crossword/shared
 └── client/              ← imports from @crossword/shared
@@ -364,25 +366,12 @@ interface Cell {
   type: 'letter' | 'block' | 'empty';
   number?: number;       // Clue number if start of word
   solution?: string;     // Correct letter(s) - can be multi-char for rebus
-  
-  // iPUZ extended features
-  style?: {
-    circle?: boolean;           // Circled cell (common in themed puzzles)
-    shaded?: boolean;           // Shaded/highlighted cell
-    backgroundColor?: string;   // Custom background color
-  };
-  bars?: {
-    top?: boolean;              // Bar/barrier on top edge
-    right?: boolean;            // Bar on right edge
-    bottom?: boolean;           // Bar on bottom edge
-    left?: boolean;             // Bar on left edge
-  };
 }
 
 interface Clue {
   number: number;
   text: string;
-  answer: string;        // Can be multi-char per cell for rebus
+  answer: string;
 }
 ```
 
@@ -405,15 +394,12 @@ interface Player {
 
 interface GameState {
   grid: PlayerCell[][];  // Current state of player entries
-  timer?: number;        // Optional timer in seconds
   completed: boolean;
 }
 
 interface PlayerCell {
   value: string;
   playerId?: string;     // Who entered this letter
-  timestamp: number;
-  isCorrect?: boolean;   // For check mode
 }
 ```
 
@@ -421,42 +407,41 @@ interface PlayerCell {
 
 ## 🔄 Real-time Sync Strategy
 
-### Approach: Server-Authoritative Event Sourcing
+### Approach: Simple Broadcast (Last-Write-Wins)
 
-Each cell change is an event, with the **server as the source of truth**:
+For MVP, use straightforward event broadcasting:
 
 1. Client sends cell change to server
-2. Server assigns authoritative timestamp/sequence number
-3. Server broadcasts to all clients (including sender)
-4. Clients apply changes in server-determined order
+2. Server validates and stores in Redis
+3. Server broadcasts to all clients in the room
+4. Clients apply changes as they arrive
 
-This prevents race conditions where high-latency clients see different final states.
+**Conflict handling**: If two users edit the same cell simultaneously, the last event processed by the server wins. For a friends app, this is rare and acceptable.
 
 ```typescript
 // Client sends
 interface CellChangeRequest {
-  position: { row: number; col: number };
+  row: number;
+  col: number;
   value: string;
 }
 
-// Server broadcasts (with authority)
+// Server broadcasts
 interface CellChangeEvent {
   type: 'CELL_CHANGE';
-  sessionId: string;
   playerId: string;
-  position: { row: number; col: number };
+  row: number;
+  col: number;
   value: string;
-  sequence: number;        // Server-assigned ordering
-  serverTimestamp: number; // Server-assigned time
 }
 ```
 
-### Future: CRDT Upgrade Path
+### Future: Ordered Events
 
-If we need offline support or more complex conflict resolution:
-- Yjs or Automerge for the grid state
-- Automatic merge of concurrent edits
-- Would require more significant refactor
+If stricter ordering is needed:
+- Server assigns sequence numbers to events
+- Clients buffer and reorder if events arrive out of sequence
+- Move to CRDT (Yjs/Automerge) for offline support
 
 ---
 
@@ -477,46 +462,75 @@ Server checks completion when:
 
 A puzzle is **complete** when all letter cells contain the correct solution value.
 
-### Check & Reveal (Multiplayer Policy)
+### Check & Reveal
 
-**Options** (configurable per session):
-1. **Individual check**: Only requester sees correctness highlights
-2. **Shared check**: All players see which cells are wrong
-3. **Reveal disabled**: No reveal in competitive mode
-
-Default for friends: Shared check, reveal allowed (collaborative, not competitive).
+For MVP, all check/reveal actions are **shared** with all players:
+- Check cell/word/puzzle highlights incorrect cells for everyone
+- Reveal shows the answer to everyone
+- Collaborative approach — not competitive
 
 ---
 
 ## 📱 Mobile Considerations
 
-### Input Strategy: Native Keyboard + Pan/Zoom
+### Input Strategy: Native Keyboard + Browser Zoom
 
-For MVP, use the **native mobile keyboard** and let users pan/zoom the grid:
+For MVP, rely on **native browser capabilities**:
 
-- Simpler to implement — no custom keyboard component
-- Users can zoom in on the area they're working on
-- Pinch-to-zoom and drag-to-pan on the grid
-- Keyboard appears when a cell is tapped, grid adjusts
+- Use native mobile keyboard (appears when cell tapped)
+- Use native browser pinch-to-zoom (no custom zoom code)
+- Set viewport meta: `<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">`
 
-**Tradeoff**: Layout will jump when keyboard opens/closes, but acceptable for MVP.
-
-**Future enhancement**: Custom on-screen keyboard if user feedback demands it.
+**Tradeoff**: Layout jumps when keyboard opens, but acceptable for MVP.
 
 ### Layout & Touch
 
 - **Touch-friendly grid**: Large tap targets (44px minimum per cell)
-- **Zoomable grid**: Allow pinch-to-zoom for precision on small screens
-- **Reset view button**: Quick way to return to full-grid view after zooming
-- **Responsive layout**: Clues collapse/expand on mobile, swipe between grid and clues
-- **Gesture support**: Swipe to change direction, double-tap to toggle direction
+- **Responsive layout**: Clues collapse/expand on mobile
+- **Direction toggle**: Tap selected cell to toggle across/down
 
-### Accessibility
+### Accessibility (MVP basics)
 
-- **Screen readers**: Use `role="grid"` with proper `aria-label` per cell
-- **Clue announcements**: Announce current clue when cell focused
-- **Keyboard navigation**: Full arrow key support for desktop users
-- **High contrast**: Ensure sufficient contrast for cell states (selected, correct, incorrect)
+- **Keyboard navigation**: Arrow key support for desktop users
+- **Focus indicators**: Clear visual focus on selected cell
+
+---
+
+## 🧪 Multi-User Testing Strategy
+
+Since multiplayer is the core feature, prioritize testing with multiple users from the start:
+
+### Local Development
+
+| Approach | How | Best for |
+|----------|-----|----------|
+| **Multiple browser tabs** | Open 2+ tabs to same URL; each gets unique `localStorage` ID automatically | Quick manual testing |
+| **Incognito + regular** | One regular window + one incognito = two isolated users | Testing identity isolation |
+| **Multiple browsers** | Chrome + Firefox + Safari | True cross-browser testing |
+
+### Automated Testing (Playwright)
+
+Use Playwright's multi-context feature to simulate multiple users:
+
+```typescript
+test('two users can see each other\'s edits', async ({ browser }) => {
+  const userA = await browser.newContext();
+  const userB = await browser.newContext();
+  
+  const pageA = await userA.newPage();
+  const pageB = await userB.newPage();
+  
+  await pageA.goto('#puzzle/test123');
+  await pageB.goto('#puzzle/test123');
+  
+  // User A types a letter
+  await pageA.click('[data-cell="0-0"]');
+  await pageA.keyboard.type('A');
+  
+  // User B should see it
+  await expect(pageB.locator('[data-cell="0-0"]')).toHaveText('A');
+});
+```
 
 ---
 
@@ -542,9 +556,184 @@ For MVP, use the **native mobile keyboard** and let users pan/zoom the grid:
 
 ---
 
-## 🤔 Open Questions
+## 📅 MVP Work Schedule
 
-1. **Svelte routing**: Plain Svelte 5 + Vite, or SvelteKit for file-based routing?
+A sequenced roadmap of implementation milestones. Each milestone is **independently testable** and builds on the previous one. Aim for **working software at every step**.
+
+### Milestone 1: Project Foundation
+> **Goal**: Dev environment, build pipeline, and test harness in place.
+
+- [ ] Initialize monorepo structure (`packages/shared`, `packages/server`, `packages/client`)
+- [ ] Configure TypeScript, ESLint, and Prettier with shared configs
+- [ ] Set up Vite for the Svelte client with HMR
+- [ ] Set up Express server skeleton with health check endpoint
+- [ ] Add Vitest for unit tests; configure coverage thresholds
+- [ ] Add Playwright for end-to-end tests (empty test suite)
+- [ ] Create Docker Compose for local Redis
+- [ ] Create `npm run dev` script that starts client, server, and Redis together
+- [ ] **Quality gate**: `npm test` passes, `npm run dev` starts all services, health check responds
+
+---
+
+### Milestone 2: Shared Types & iPUZ Parsing
+> **Goal**: Robust puzzle data model that both client and server trust.
+
+- [ ] Define Zod schemas in `shared/` for iPUZ structure (core subset)
+- [ ] Export TypeScript types inferred from Zod schemas
+- [ ] Implement `parseIPUZ()` function with validation and clear error messages
+- [ ] Add unit tests for valid iPUZ, malformed JSON, missing fields, edge cases
+- [ ] Support common iPUZ variations (numbered cells, blocks, empty cells)
+- [ ] **Quality gate**: 100% test coverage on parser; sample puzzles load without error
+
+---
+
+### Milestone 3: Static Grid Rendering (Client)
+> **Goal**: Display a parsed puzzle in the browser, read-only.
+
+- [ ] Create `<CrosswordGrid>` Svelte component (renders cell structure)
+- [ ] Create `<ClueList>` Svelte component (Across/Down lists)
+- [ ] Apply Bulma styling; ensure mobile-friendly with CSS grid
+- [ ] Load a hardcoded sample puzzle and render it
+- [ ] Add Playwright test: grid renders correct dimensions, clues visible
+- [ ] **Quality gate**: Visual inspection on desktop + mobile viewports; Playwright passes
+
+---
+
+### Milestone 4: Interactive Grid (Solo, No Backend)
+> **Goal**: Single-player puzzle interaction in client only.
+
+- [ ] Implement cell selection (click/tap to select)
+- [ ] Implement keyboard input (A-Z fills cell, arrow keys navigate)
+- [ ] Implement direction toggle (tap selected cell or Tab key)
+- [ ] Highlight current word based on direction
+- [ ] Sync clue highlight with selected cell
+- [ ] Store player grid state in Svelte stores
+- [ ] **Quality gate**: Manual playthrough of a full puzzle; Playwright interaction tests
+
+---
+
+### Milestone 5: Check & Reveal (Solo)
+> **Goal**: Players can verify progress against solution.
+
+- [ ] Implement "Check puzzle" (highlight all incorrect cells, shared with all players)
+- [ ] Implement "Reveal puzzle" with confirmation (shared with all players)
+- [ ] Add visual states: correct (green flash), incorrect (red shake)
+- [ ] Detect puzzle completion → show celebration modal
+- [ ] Unit tests for correctness logic; Playwright tests for UI states
+- [ ] **Quality gate**: Complete puzzle with check/reveal working correctly
+
+---
+
+### Milestone 6: Puzzle Upload API
+> **Goal**: Server accepts iPUZ file and returns stable puzzle ID.
+
+- [ ] `POST /api/puzzle` endpoint: accept multipart file upload
+- [ ] Server-side Zod validation (reuse shared schemas)
+- [ ] Generate UUIDv4 as puzzle ID
+- [ ] Store puzzle JSON in Redis (`puzzle:{id}`)
+- [ ] Return `{ id, shareUrl }` on success; return 400 with errors otherwise
+- [ ] Add rate limiting (1 upload/min/IP) and size limit (1MB)
+- [ ] Integration tests with supertest; test error cases
+- [ ] **Quality gate**: Upload via curl works; invalid files rejected with helpful errors
+
+---
+
+### Milestone 7: Puzzle Fetch & Dynamic Loading
+> **Goal**: Client loads puzzle from server by URL.
+
+- [ ] `GET /api/puzzle/:id` endpoint: return puzzle JSON
+- [ ] Client hash route `#puzzle/:id` → fetches puzzle from API
+- [ ] Loading and error states in UI
+- [ ] Upload UI in client: drag-drop or file picker → upload → redirect to `#puzzle/:id`
+- [ ] Playwright e2e: upload file → redirected → puzzle renders
+- [ ] **Quality gate**: Full upload-to-play flow works end-to-end
+
+---
+
+### Milestone 8: Real-time Foundation (WebSocket)
+> **Goal**: Establish Socket.io connection, but no game sync yet.
+
+- [ ] Add Socket.io server with connection/disconnection logging
+- [ ] Client connects on puzzle page; joins room `puzzle:{id}`
+- [ ] Assign anonymous player ID from localStorage (generate if missing)
+- [ ] Broadcast player count on join/leave
+- [ ] Display "X players connected" badge in UI
+- [ ] Handle reconnection gracefully (Socket.io built-in)
+- [ ] **Quality gate**: Two browser tabs show correct player count
+
+---
+
+### Milestone 9: Real-time Grid Sync
+> **Goal**: Cell edits broadcast to all players in real-time.
+
+- [ ] On cell change: emit `cell:change` event to server
+- [ ] Server validates, stores in Redis, broadcasts to room (no sequence numbers)
+- [ ] Clients apply changes as they arrive (last-write-wins)
+- [ ] Show who filled each cell (colored border or player color)
+- [ ] Multi-tab manual test; Playwright multi-context test (see Testing Strategy section)
+- [ ] **Quality gate**: Type in one tab → appears instantly in another
+
+---
+
+### Milestone 10: Cursor Presence
+> **Goal**: See where other players are focused.
+
+- [ ] Emit `cursor:move` events on cell selection change
+- [ ] Render remote cursor indicators (colored highlight + player name)
+- [ ] Throttle cursor events to ~10/second
+- [ ] Clean up cursors on player disconnect
+- [ ] **Quality gate**: Two players see each other's cursor in real-time
+
+---
+
+### Milestone 11: Session Persistence & Rejoin
+> **Goal**: Close browser, return to same session, continue where you left off.
+
+- [ ] Game state persisted to Redis on every change (already done in M9)
+- [ ] On GET `/api/puzzle/:id`, include current gameState in response
+- [ ] Client initializes grid from `gameState.grid` instead of blank
+- [ ] Player rejoins same room with same ID if token matches
+- [ ] **Quality gate**: Fill some cells → close tab → reopen URL → state restored
+
+---
+
+### Milestone 12: Production Deployment
+> **Goal**: App runs on a public server with HTTPS.
+
+- [ ] Dockerfile for server (Node + static client build)
+- [ ] Nginx config for SSL termination, static serving, proxy to backend
+- [ ] Docker Compose for production (nginx, node, redis)
+- [ ] Let's Encrypt certificate provisioning (certbot)
+- [ ] Environment variable configuration (Redis host, allowed origins)
+- [ ] Health check and basic monitoring (console logs to start)
+- [ ] **Quality gate**: Friends can access via public URL and play together
+
+---
+
+### Milestone 13: Polish & Edge Cases
+> **Goal**: Handle the "real world" gracefully.
+
+- [ ] Friendly error pages (puzzle not found, server error)
+- [ ] Handle Redis disconnection without crashing
+- [ ] Session expiration (puzzles expire after 7 days of inactivity)
+- [ ] Mobile keyboard handling (viewport adjustments, scroll behavior)
+- [ ] **Quality gate**: Test on real phones; share with beta users for feedback
+
+---
+
+### 🏁 MVP Complete Criteria
+
+The MVP is **done** when:
+
+1. A user can upload a `.ipuz` file via the web UI
+2. They receive a shareable link
+3. Friends can join via the link and see each other's cursors
+4. All players see real-time cell updates
+5. Check/reveal functions work
+6. Sessions persist across page reloads
+7. The app is deployed and accessible via HTTPS
+
+---
 
 ---
 
@@ -554,15 +743,54 @@ For MVP, use the **native mobile keyboard** and let users pan/zoom the grid:
 |----------|--------|
 | User accounts | No — anonymous with browser `localStorage` token |
 | Puzzle sources | iPUZ upload only |
-| Session sharing | URL-based invite links (e.g., `/puzzle/abc123`) |
+| Session sharing | URL-based invite links (e.g., `#puzzle/abc123`) |
 | Sessions per puzzle | One session per upload |
-| Mobile keyboard | Native keyboard + pan/zoom |
-| Real-time sync | Server-authoritative, not CRDT |
+| Mobile keyboard | Native keyboard + browser zoom |
+| Real-time sync | Simple broadcast, last-write-wins |
 | Data storage | Redis only (for MVP) |
+| Routing | Hash-based SPA (`#puzzle/:id`), no SvelteKit |
 
 ---
 
-## 📚 References
+## � Future Enhancements (Post-MVP)
+
+Features deferred to keep MVP simple:
+
+### Cell Features
+- **Circles**: Circled cells for themed puzzles
+- **Shading**: Background colors and shaded cells
+- **Bars**: Barrier lines between cells (British-style grids)
+
+### Game State
+- **Timer**: Track solve time per session
+- **Per-cell timestamps**: Track when each cell was filled
+- **Correctness state**: Persist `isCorrect` per cell (currently computed on-demand)
+
+### Check/Reveal Modes
+- **Individual check**: Only requester sees correctness
+- **Reveal disabled**: For competitive play
+
+### Accessibility
+- **Screen readers**: Full ARIA labeling with `role="grid"` and `aria-label` per cell
+- **Clue announcements**: Announce current clue when cell focused
+- **High contrast mode**: Enhanced contrast for cell states
+
+### Mobile UX
+- **Custom keyboard**: On-screen A-Z keyboard to prevent layout jumps
+- **Custom pinch-to-zoom**: In-app zoom controls with reset view button
+- **Advanced gestures**: Swipe to change direction, double-tap toggle
+
+### Real-time Sync
+- **Sequence ordering**: Server-assigned sequence numbers with client reordering
+- **CRDT sync**: Yjs/Automerge for offline support and automatic merge
+
+### Infrastructure
+- **PostgreSQL migration**: For analytics, history, and durability
+- **User accounts**: Optional login for cross-device sessions
+
+---
+
+## �📚 References
 
 - [iPUZ Format Specification](https://www.puzzazz.com/ipuz)
 - [Socket.io Documentation](https://socket.io/docs/)
