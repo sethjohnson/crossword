@@ -563,15 +563,15 @@ A sequenced roadmap of implementation milestones. Each milestone is **independen
 ### Milestone 1: Project Foundation
 > **Goal**: Dev environment, build pipeline, and test harness in place.
 
-- [ ] Initialize monorepo structure (`packages/shared`, `packages/server`, `packages/client`)
-- [ ] Configure TypeScript, ESLint, and Prettier with shared configs
-- [ ] Set up Vite for the Svelte client with HMR
-- [ ] Set up Express server skeleton with health check endpoint
-- [ ] Add Vitest for unit tests; configure coverage thresholds
-- [ ] Add Playwright for end-to-end tests (empty test suite)
-- [ ] Create Docker Compose for local Redis
-- [ ] Create `npm run dev` script that starts client, server, and Redis together
-- [ ] **Quality gate**: `npm test` passes, `npm run dev` starts all services, health check responds
+- [x] Initialize monorepo structure (`packages/shared`, `packages/server`, `packages/client`)
+- [x] Configure TypeScript, ESLint, and Prettier with shared configs
+- [x] Set up Vite for the Svelte client with HMR
+- [x] Set up Express server skeleton with health check endpoint
+- [x] Add Vitest for unit tests; configure coverage thresholds
+- [x] Add Playwright for end-to-end tests (empty test suite)
+- [x] Create Docker Compose for local Redis
+- [x] Create `npm run dev` script that starts client, server, and Redis together
+- [x] **Quality gate**: `npm test` passes, `npm run dev` starts all services, health check responds
 
 ---
 

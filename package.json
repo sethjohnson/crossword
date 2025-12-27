@@ -1,0 +1,43 @@
+{
+  "name": "crossword",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "description": "Real-time collaborative crossword puzzle app",
+  "workspaces": [
+    "packages/shared",
+    "packages/server",
+    "packages/client"
+  ],
+  "scripts": {
+    "dev": "concurrently -n shared,server,client -c blue,green,magenta \"npm run dev -w @crossword/shared\" \"npm run dev -w @crossword/server\" \"npm run dev -w @crossword/client\"",
+    "build": "npm run build -w @crossword/shared && npm run build -w @crossword/server && npm run build -w @crossword/client",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^20.17.12",
+    "@vitest/coverage-v8": "^2.1.8",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.17.0",
+    "eslint-plugin-svelte": "^2.46.1",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "prettier-plugin-svelte": "^3.3.3",
+    "svelte-eslint-parser": "^0.43.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
