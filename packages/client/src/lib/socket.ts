@@ -22,6 +22,14 @@ export const isConnected = writable(false);
 export const playerCount = writable(0);
 export const cellOwners = writable<Map<string, string>>(new Map()); // key: "row,col", value: playerId
 
+// Remote cursors: Map<socketId, {row, col, playerId}>
+export interface RemoteCursor {
+    row: number;
+    col: number;
+    playerId: string;
+}
+export const remoteCursors = writable<Map<string, RemoteCursor>>(new Map());
+
 // Derived store for display text
 export const playerCountText = derived(playerCount, ($count) => {
     if ($count === 0) return '';
@@ -89,6 +97,29 @@ export function connectToRoom(puzzleId: string): void {
             onCellChangeCallback(row, col, value, remotePlayerId);
         }
     });
+
+    // Listen for remote cursor movements
+    socket.on('cursor:move', ({ socketId, playerId: remotePlayerId, row, col }: {
+        socketId: string;
+        playerId: string;
+        row: number;
+        col: number;
+    }) => {
+        remoteCursors.update(cursors => {
+            const newCursors = new Map(cursors);
+            newCursors.set(socketId, { row, col, playerId: remotePlayerId });
+            return newCursors;
+        });
+    });
+
+    // Listen for cursor leaving (player disconnect)
+    socket.on('cursor:leave', ({ socketId }: { socketId: string }) => {
+        remoteCursors.update(cursors => {
+            const newCursors = new Map(cursors);
+            newCursors.delete(socketId);
+            return newCursors;
+        });
+    });
 }
 
 export function disconnect(): void {
@@ -100,6 +131,7 @@ export function disconnect(): void {
     isConnected.set(false);
     playerCount.set(0);
     cellOwners.set(new Map());
+    remoteCursors.set(new Map());
 }
 
 // Emit cell change to server
@@ -131,6 +163,22 @@ let onCellChangeCallback: ((row: number, col: number, value: string, playerId: s
 
 export function onRemoteCellChange(callback: (row: number, col: number, value: string, playerId: string) => void): void {
     onCellChangeCallback = callback;
+}
+
+// Throttled cursor move emit (~10/second = 100ms)
+let lastCursorEmit = 0;
+const CURSOR_THROTTLE_MS = 100;
+
+export function emitCursorMove(row: number, col: number): void {
+    const now = Date.now();
+    if (socket && currentPuzzleId && now - lastCursorEmit >= CURSOR_THROTTLE_MS) {
+        lastCursorEmit = now;
+        socket.emit('cursor:move', {
+            puzzleId: currentPuzzleId,
+            row,
+            col,
+        });
+    }
 }
 
 export { playerId };

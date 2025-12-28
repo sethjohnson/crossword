@@ -254,3 +254,27 @@ Milestone 8 complete!
 - All 6 E2E tests passing.
 
 Milestone 9 complete!
+
+## 2025-12-27 23:55 — Milestone 10: Cursor Presence
+
+### Implementation Log
+
+#### Server
+- Added `cursor:move` event handler.
+- Broadcasts cursor position to room (exclude sender).
+- Emits `cursor:leave` on player disconnect.
+
+#### Client
+- Added `remoteCursors` store (Map<socketId, cursor>).
+- Added `cursor:move` and `cursor:leave` listeners.
+- Throttled `emitCursorMove` (~10/second).
+- CrosswordGrid emits on cell click.
+
+#### Visual
+- Remote cursors show colored inset box-shadow.
+- Color deterministically generated from playerId.
+
+#### Verification
+- All 6 E2E tests passing.
+
+Milestone 10 complete!

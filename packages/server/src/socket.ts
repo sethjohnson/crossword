@@ -66,10 +66,31 @@ export function initializeSocket(httpServer: HttpServer): Server {
             console.log(`[Socket] Cell change: ${row},${col}=${value} by ${playerId}`);
         });
 
+        // Handle cursor movement
+        socket.on('cursor:move', ({ puzzleId, row, col }: {
+            puzzleId: string;
+            row: number;
+            col: number;
+        }) => {
+            const roomName = `puzzle:${puzzleId}`;
+            const playerId = socket.data.playerId;
+
+            // Broadcast cursor position to others in room
+            socket.to(roomName).emit('cursor:move', {
+                socketId: socket.id,
+                playerId,
+                row,
+                col,
+            });
+        });
+
         socket.on('disconnect', () => {
             const { roomName, playerId } = socket.data;
 
             if (roomName) {
+                // Notify others that cursor is gone
+                socket.to(roomName).emit('cursor:leave', { socketId: socket.id });
+
                 // Remove socket from room tracking
                 const sockets = roomSockets.get(roomName);
                 if (sockets) {

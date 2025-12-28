@@ -1,7 +1,13 @@
 <script lang="ts">
   import type { CrosswordPuzzle, PuzzleCell } from '@crossword/shared';
   import { puzzleStore, currentWord, type CellPosition } from '../stores/puzzleStore';
-  import { emitCellChange, cellOwners, playerId } from '../lib/socket';
+  import {
+    emitCellChange,
+    cellOwners,
+    playerId,
+    emitCursorMove,
+    remoteCursors,
+  } from '../lib/socket';
   import { onMount } from 'svelte';
 
   export let puzzle: CrosswordPuzzle;
@@ -45,6 +51,28 @@
   // Handle cell click
   function handleCellClick(row: number, col: number) {
     puzzleStore.selectCell(row, col);
+    emitCursorMove(row, col);
+  }
+
+  // Check if cell has a remote cursor
+  function hasRemoteCursor(row: number, col: number): boolean {
+    for (const cursor of $remoteCursors.values()) {
+      if (cursor.row === row && cursor.col === col) return true;
+    }
+    return false;
+  }
+
+  // Get color for remote cursor at this cell
+  function getRemoteCursorColor(row: number, col: number): string | null {
+    for (const cursor of $remoteCursors.values()) {
+      if (cursor.row === row && cursor.col === col) {
+        // Generate deterministic color from playerId
+        const hash = cursor.playerId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const hue = hash % 360;
+        return `hsl(${hue}, 80%, 50%)`;
+      }
+    }
+    return null;
   }
 
   // Handle keyboard input
@@ -138,6 +166,7 @@
         class:is-highlighted={isInCurrentWord(rowIndex, colIndex) &&
           !isSelected(rowIndex, colIndex)}
         class:is-incorrect={isIncorrect(rowIndex, colIndex)}
+        class:has-remote-cursor={hasRemoteCursor(rowIndex, colIndex)}
         data-row={rowIndex}
         data-col={colIndex}
         on:click={() => handleCellClick(rowIndex, colIndex)}
@@ -146,9 +175,11 @@
         type="button"
         role="gridcell"
         aria-label={isBlock(cell) ? 'Block' : `Row ${rowIndex + 1}, Column ${colIndex + 1}`}
-        style={getCellOwnerColor(rowIndex, colIndex)
-          ? `background-color: ${getCellOwnerColor(rowIndex, colIndex)}`
-          : ''}
+        style={getRemoteCursorColor(rowIndex, colIndex)
+          ? `box-shadow: inset 0 0 0 3px ${getRemoteCursorColor(rowIndex, colIndex)}`
+          : getCellOwnerColor(rowIndex, colIndex)
+            ? `background-color: ${getCellOwnerColor(rowIndex, colIndex)}`
+            : ''}
       >
         {#if !isBlock(cell)}
           {#if getNumber(cell)}
