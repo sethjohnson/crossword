@@ -226,3 +226,31 @@ Milestone 7 complete!
 - Socket.io connection established successfully.
 
 Milestone 8 complete!
+
+## 2025-12-27 23:22 — Milestone 9: Real-time Grid Sync
+
+### Implementation Log
+
+#### Server
+- Added `cell:change` event handler.
+- Store grid state in Redis (`game:{puzzleId}`).
+- Broadcast to room (exclude sender).
+- Fixed player count to track `socket.id` (not `playerId`).
+
+#### Client
+- Added `emitCellChange()` to socket module.
+- Added `cellOwners` store for tracking.
+- `onRemoteCellChange` callback for updates.
+- CrosswordGrid emits on letter/backspace.
+- Added `applyRemoteChange` to puzzleStore.
+
+#### Visual
+- Player color based on hash of playerId.
+- Cells filled by others show different background.
+
+#### Verification
+- Browser subagent confirmed real-time sync works.
+- Letters typed in one tab appear in others instantly.
+- All 6 E2E tests passing.
+
+Milestone 9 complete!

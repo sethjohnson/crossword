@@ -234,6 +234,21 @@ function createPuzzleStore() {
                 incorrectCells: [],
             }));
         },
+
+        // Apply a remote cell change (from another player)
+        applyRemoteChange(row: number, col: number, value: string) {
+            update((state) => {
+                if (!state.puzzle) return state;
+
+                const newGrid = state.playerGrid.map((r) => [...r]);
+                newGrid[row][col] = value;
+
+                return {
+                    ...state,
+                    playerGrid: newGrid,
+                };
+            });
+        },
     };
 }
 

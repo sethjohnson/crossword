@@ -1,8 +1,8 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 
-// Track player counts per room
-const roomPlayers = new Map<string, Set<string>>();
+// Track socket connections per room (by socket.id for accurate multi-tab count)
+const roomSockets = new Map<string, Set<string>>();
 
 export function initializeSocket(httpServer: HttpServer): Server {
     const io = new Server(httpServer, {
@@ -21,43 +21,71 @@ export function initializeSocket(httpServer: HttpServer): Server {
             // Join the Socket.io room
             socket.join(roomName);
 
-            // Store player in room tracking
-            if (!roomPlayers.has(roomName)) {
-                roomPlayers.set(roomName, new Set());
+            // Track socket in room (use socket.id for accurate count)
+            if (!roomSockets.has(roomName)) {
+                roomSockets.set(roomName, new Set());
             }
-            roomPlayers.get(roomName)!.add(playerId);
+            roomSockets.get(roomName)!.add(socket.id);
 
-            // Store player info on socket for cleanup
+            // Store room info on socket for cleanup
             socket.data.roomName = roomName;
             socket.data.playerId = playerId;
 
-            console.log(`[Socket] Player ${playerId} joined room ${roomName}`);
+            console.log(`[Socket] Player ${playerId} (socket ${socket.id}) joined room ${roomName}`);
 
             // Broadcast updated player count to room
-            const playerCount = roomPlayers.get(roomName)!.size;
+            const playerCount = roomSockets.get(roomName)!.size;
             io.to(roomName).emit('room:players', { count: playerCount });
+        });
+
+        // Handle cell changes
+        socket.on('cell:change', async ({ puzzleId, row, col, value, playerId }: {
+            puzzleId: string;
+            row: number;
+            col: number;
+            value: string;
+            playerId: string;
+        }) => {
+            const roomName = `puzzle:${puzzleId}`;
+
+            // Store in Redis (lazy import to avoid circular deps in tests)
+            try {
+                const { redis } = await import('./services/redis.js');
+                const key = `game:${puzzleId}`;
+                const gridStr = await redis.hget(key, 'grid') || '{}';
+                const grid = JSON.parse(gridStr);
+                grid[`${row},${col}`] = { value, playerId, timestamp: Date.now() };
+                await redis.hset(key, 'grid', JSON.stringify(grid));
+            } catch (err) {
+                console.error('[Socket] Redis error:', err);
+            }
+
+            // Broadcast to others in room (exclude sender)
+            socket.to(roomName).emit('cell:change', { row, col, value, playerId });
+
+            console.log(`[Socket] Cell change: ${row},${col}=${value} by ${playerId}`);
         });
 
         socket.on('disconnect', () => {
             const { roomName, playerId } = socket.data;
 
-            if (roomName && playerId) {
-                // Remove player from room tracking
-                const players = roomPlayers.get(roomName);
-                if (players) {
-                    players.delete(playerId);
+            if (roomName) {
+                // Remove socket from room tracking
+                const sockets = roomSockets.get(roomName);
+                if (sockets) {
+                    sockets.delete(socket.id);
 
                     // Broadcast updated count
-                    const playerCount = players.size;
+                    const playerCount = sockets.size;
                     io.to(roomName).emit('room:players', { count: playerCount });
 
                     // Clean up empty rooms
-                    if (players.size === 0) {
-                        roomPlayers.delete(roomName);
+                    if (sockets.size === 0) {
+                        roomSockets.delete(roomName);
                     }
                 }
 
-                console.log(`[Socket] Player ${playerId} left room ${roomName}`);
+                console.log(`[Socket] Player ${playerId} (socket ${socket.id}) left room ${roomName}`);
             }
 
             console.log(`[Socket] Client disconnected: ${socket.id}`);

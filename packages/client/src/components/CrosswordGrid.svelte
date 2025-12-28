@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { CrosswordPuzzle, PuzzleCell } from '@crossword/shared';
   import { puzzleStore, currentWord, type CellPosition } from '../stores/puzzleStore';
+  import { emitCellChange, cellOwners, playerId } from '../lib/socket';
   import { onMount } from 'svelte';
 
   export let puzzle: CrosswordPuzzle;
@@ -51,12 +52,14 @@
     if (!$puzzleStore.selectedCell) return;
 
     const key = event.key;
+    const { row, col } = $puzzleStore.selectedCell;
     console.log('Key down:', key, 'Selected:', $puzzleStore.selectedCell);
 
     // Letter input
     if (/^[a-zA-Z]$/.test(key)) {
       event.preventDefault();
       puzzleStore.enterLetter(key);
+      emitCellChange(row, col, key.toUpperCase());
       return;
     }
 
@@ -84,9 +87,31 @@
         break;
       case 'Backspace':
         event.preventDefault();
+        // Get current cell before clearing (might move)
+        const currentValue = $puzzleStore.playerGrid[row]?.[col] || '';
         puzzleStore.clearCell();
+        // Emit change for the cleared cell
+        if (currentValue !== '') {
+          emitCellChange(row, col, '');
+        } else {
+          // If was empty, clearCell moves back - emit for previous cell
+          const prevCell = $puzzleStore.selectedCell;
+          if (prevCell && (prevCell.row !== row || prevCell.col !== col)) {
+            emitCellChange(prevCell.row, prevCell.col, '');
+          }
+        }
         break;
     }
+  }
+
+  // Get player color for a cell (for attribution)
+  function getCellOwnerColor(row: number, col: number): string | null {
+    const ownerId = $cellOwners.get(`${row},${col}`);
+    if (!ownerId || ownerId === playerId) return null;
+    // Generate deterministic color from player ID
+    const hash = ownerId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hue = hash % 360;
+    return `hsl(${hue}, 70%, 80%)`;
   }
 
   // Reactive player grid from store
@@ -121,6 +146,9 @@
         type="button"
         role="gridcell"
         aria-label={isBlock(cell) ? 'Block' : `Row ${rowIndex + 1}, Column ${colIndex + 1}`}
+        style={getCellOwnerColor(rowIndex, colIndex)
+          ? `background-color: ${getCellOwnerColor(rowIndex, colIndex)}`
+          : ''}
       >
         {#if !isBlock(cell)}
           {#if getNumber(cell)}

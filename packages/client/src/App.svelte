@@ -8,7 +8,7 @@
   import PlayerBadge from './components/PlayerBadge.svelte';
   import { puzzleStore, isComplete } from './stores/puzzleStore';
   import { router } from './lib/router';
-  import { connectToRoom, disconnect } from './lib/socket';
+  import { connectToRoom, disconnect, onRemoteCellChange } from './lib/socket';
 
   // State
   let puzzle: CrosswordPuzzle | null = null;
@@ -21,6 +21,10 @@
   $: if ($router.puzzleId) {
     loadPuzzle($router.puzzleId);
     connectToRoom($router.puzzleId);
+    // Wire up remote cell changes to puzzleStore
+    onRemoteCellChange((row, col, value, _playerId) => {
+      puzzleStore.applyRemoteChange(row, col, value);
+    });
   } else {
     puzzle = null;
     disconnect();
