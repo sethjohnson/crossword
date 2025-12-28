@@ -54,25 +54,25 @@
     emitCursorMove(row, col);
   }
 
-  // Check if cell has a remote cursor
-  function hasRemoteCursor(row: number, col: number): boolean {
+  // Reactive lookup for remote cursors - forces re-render on cursor changes
+  $: remoteCursorLookup = (() => {
+    const lookup = new Map<string, string>(); // key: "row,col", value: color
     for (const cursor of $remoteCursors.values()) {
-      if (cursor.row === row && cursor.col === col) return true;
+      const hash = cursor.playerId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const hue = hash % 360;
+      lookup.set(`${cursor.row},${cursor.col}`, `hsl(${hue}, 80%, 50%)`);
     }
-    return false;
+    return lookup;
+  })();
+
+  // Check if cell has a remote cursor (reactive via $remoteCursorLookup)
+  function hasRemoteCursor(row: number, col: number): boolean {
+    return remoteCursorLookup.has(`${row},${col}`);
   }
 
-  // Get color for remote cursor at this cell
+  // Get color for remote cursor at this cell (reactive via $remoteCursorLookup)
   function getRemoteCursorColor(row: number, col: number): string | null {
-    for (const cursor of $remoteCursors.values()) {
-      if (cursor.row === row && cursor.col === col) {
-        // Generate deterministic color from playerId
-        const hash = cursor.playerId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const hue = hash % 360;
-        return `hsl(${hue}, 80%, 50%)`;
-      }
-    }
-    return null;
+    return remoteCursorLookup.get(`${row},${col}`) || null;
   }
 
   // Handle keyboard input
@@ -166,7 +166,7 @@
         class:is-highlighted={isInCurrentWord(rowIndex, colIndex) &&
           !isSelected(rowIndex, colIndex)}
         class:is-incorrect={isIncorrect(rowIndex, colIndex)}
-        class:has-remote-cursor={hasRemoteCursor(rowIndex, colIndex)}
+        class:has-remote-cursor={remoteCursorLookup.has(`${rowIndex},${colIndex}`)}
         data-row={rowIndex}
         data-col={colIndex}
         on:click={() => handleCellClick(rowIndex, colIndex)}
@@ -175,8 +175,8 @@
         type="button"
         role="gridcell"
         aria-label={isBlock(cell) ? 'Block' : `Row ${rowIndex + 1}, Column ${colIndex + 1}`}
-        style={getRemoteCursorColor(rowIndex, colIndex)
-          ? `box-shadow: inset 0 0 0 3px ${getRemoteCursorColor(rowIndex, colIndex)}`
+        style={remoteCursorLookup.get(`${rowIndex},${colIndex}`)
+          ? `box-shadow: inset 0 0 0 3px ${remoteCursorLookup.get(`${rowIndex},${colIndex}`)}`
           : getCellOwnerColor(rowIndex, colIndex)
             ? `background-color: ${getCellOwnerColor(rowIndex, colIndex)}`
             : ''}
