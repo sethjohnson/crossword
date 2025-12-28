@@ -36,6 +36,11 @@
     return $currentWord.some((c) => c.row === row && c.col === col);
   }
 
+  // Check if cell is marked incorrect
+  function isIncorrect(row: number, col: number): boolean {
+    return $puzzleStore.incorrectCells.some((c) => c.row === row && c.col === col);
+  }
+
   // Handle cell click
   function handleCellClick(row: number, col: number) {
     puzzleStore.selectCell(row, col);
@@ -107,6 +112,7 @@
         class:is-selected={isSelected(rowIndex, colIndex)}
         class:is-highlighted={isInCurrentWord(rowIndex, colIndex) &&
           !isSelected(rowIndex, colIndex)}
+        class:is-incorrect={isIncorrect(rowIndex, colIndex)}
         data-row={rowIndex}
         data-col={colIndex}
         on:click={() => handleCellClick(rowIndex, colIndex)}
@@ -206,6 +212,25 @@
 
     .cell-value {
       font-size: 0.9rem;
+    }
+  }
+
+  /* Incorrect cell - red shake animation */
+  .cell.is-incorrect {
+    animation: shake 0.3s ease-in-out;
+    background-color: #ffdddd;
+  }
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-3px);
+    }
+    75% {
+      transform: translateX(3px);
     }
   }
 </style>

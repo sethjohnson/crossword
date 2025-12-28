@@ -123,3 +123,27 @@ Milestone 3 complete!
 - **Manual**: Confirmed inputs work and layout is stable.
 
 Milestone 4 complete!
+<!-- Appending review for M4 -->
+
+## 2025-12-27 22:40 — Milestone 5: Check & Reveal (Solo)
+
+### Implementation Log
+
+#### Store Updates
+- Added `incorrectCells` state to `PuzzleState`.
+- Implemented `checkPuzzle()` - compares playerGrid vs solution.
+- Implemented `revealPuzzle()` - copies solution to playerGrid.
+- Added `isComplete` derived store for completion detection.
+- Fixed type error in revealPuzzle for null solution cells.
+
+#### UI Components
+- **App.svelte**: Added Check/Reveal buttons with Bulma styling.
+- **CrosswordGrid.svelte**: Added `is-incorrect` class and shake animation.
+- **CompletionModal.svelte**: Created celebration modal.
+
+#### Verification
+- **Playwright Tests**: `e2e/check-reveal.spec.ts` (4 tests).
+  - Check marks incorrect, Reveal fills grid, modal appears, incorrect clears on edit.
+  - All 18 E2E tests passed.
+
+Milestone 5 complete!

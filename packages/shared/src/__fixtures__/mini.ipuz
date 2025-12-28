@@ -1,0 +1,44 @@
+{
+  "version": "http://ipuz.org/v2",
+  "kind": ["http://ipuz.org/crossword#1"],
+  "dimensions": {
+    "width": 5,
+    "height": 6
+  },
+  "puzzle": [
+    [1, 2, 3, "#", "#"],
+    [4, 0, 0, 5, "#"],
+    [6, 0, 0, 0, "#"],
+    [7, 0, 0, 0, 8],
+    ["#", 9, 0, 0, 0],
+    ["#", "#", 10, 0, 0]
+  ],
+  "solution": [
+    ["P", "J", "S", "#", "#"],
+    ["L", "A", "O", "S", "#"],
+    ["O", "M", "A", "N", "#"],
+    ["D", "U", "R", "A", "G"],
+    ["#", "P", "E", "R", "U"],
+    ["#", "#", "D", "E", "N"]
+  ],
+  "clues": {
+    "Across": [
+      [1, "Nighttime outfit, for short"],
+      [4, "Country that was once known as the \"Land of a Million Elephants\""],
+      [6, "Country led by a sultan"],
+      [7, "Headwear that helps promote waves"],
+      [9, "Country that celebrates National Ceviche Day"],
+      [10, "TV room"]
+    ],
+    "Down": [
+      [1, "Walk slowly and heavily"],
+      [2, "Become stuck, as a printer"],
+      [3, "Flew across the country ... three of them, actually!"],
+      [5, "Drum kit component"],
+      [8, "The Naked ___"]
+    ]
+  },
+  "title": "Mini Puzzle",
+  "author": "Joel Fagliano",
+  "copyright": "2025 The New York Times Company"
+}

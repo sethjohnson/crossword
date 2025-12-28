@@ -13,6 +13,7 @@ export interface PuzzleState {
     selectedCell: CellPosition | null;
     direction: Direction;
     playerGrid: string[][];
+    incorrectCells: CellPosition[];
 }
 
 function createPuzzleStore() {
@@ -21,6 +22,7 @@ function createPuzzleStore() {
         selectedCell: null,
         direction: 'across',
         playerGrid: [],
+        incorrectCells: [],
     });
 
     return {
@@ -36,6 +38,7 @@ function createPuzzleStore() {
                 selectedCell: null,
                 direction: 'across',
                 playerGrid,
+                incorrectCells: [],
             });
         },
 
@@ -94,6 +97,10 @@ function createPuzzleStore() {
                     ...state,
                     playerGrid: newGrid,
                     selectedCell: next || state.selectedCell,
+                    // Clear incorrect state when user types
+                    incorrectCells: state.incorrectCells.filter(
+                        (c) => !(c.row === row && c.col === col)
+                    ),
                 };
             });
         },
@@ -171,6 +178,61 @@ function createPuzzleStore() {
         getValue(row: number, col: number): string {
             const state = get({ subscribe });
             return state.playerGrid[row]?.[col] ?? '';
+        },
+
+        // Check puzzle - mark incorrect cells
+        checkPuzzle() {
+            update((state) => {
+                if (!state.puzzle) return state;
+
+                const incorrectCells: CellPosition[] = [];
+                const solution = state.puzzle.solution;
+
+                for (let row = 0; row < state.playerGrid.length; row++) {
+                    for (let col = 0; col < state.playerGrid[row].length; col++) {
+                        const playerValue = state.playerGrid[row][col];
+                        const solutionValue = solution[row][col];
+
+                        // Skip blocks and empty cells
+                        if (playerValue === '#' || playerValue === '') continue;
+
+                        // Check if incorrect
+                        if (playerValue !== solutionValue) {
+                            incorrectCells.push({ row, col });
+                        }
+                    }
+                }
+
+                return {
+                    ...state,
+                    incorrectCells,
+                };
+            });
+        },
+
+        // Reveal puzzle - copy solution to playerGrid
+        revealPuzzle() {
+            update((state) => {
+                if (!state.puzzle) return state;
+
+                const newGrid = state.puzzle.solution.map((row) =>
+                    row.map((cell): string => (cell === '#' ? '#' : (cell ?? '')))
+                );
+
+                return {
+                    ...state,
+                    playerGrid: newGrid,
+                    incorrectCells: [],
+                };
+            });
+        },
+
+        // Clear incorrect markers
+        clearIncorrect() {
+            update((state) => ({
+                ...state,
+                incorrectCells: [],
+            }));
         },
     };
 }
@@ -303,4 +365,29 @@ export const currentClueNumber = derived(puzzleStore, ($state) => {
         const cell = puzzle.puzzle[startRow][col];
         return typeof cell === 'number' && cell > 0 ? cell : null;
     }
+});
+
+// Derived store for puzzle completion
+export const isComplete = derived(puzzleStore, ($state) => {
+    if (!$state.puzzle) return false;
+
+    const solution = $state.puzzle.solution;
+    const playerGrid = $state.playerGrid;
+
+    for (let row = 0; row < solution.length; row++) {
+        for (let col = 0; col < solution[row].length; col++) {
+            const solutionValue = solution[row][col];
+            const playerValue = playerGrid[row]?.[col];
+
+            // Skip blocks
+            if (solutionValue === '#') continue;
+
+            // Check if cell is correct (non-empty and matches)
+            if (!playerValue || playerValue !== solutionValue) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 });
