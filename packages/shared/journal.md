@@ -96,3 +96,30 @@ Milestone 2 complete!
 - **Visual**: Verified correct layout and responsiveness via browser tool.
 
 Milestone 3 complete!
+
+## 2025-12-27 22:15 — Milestone 4: Interactive Grid (Solo)
+
+### Implementation Log
+
+#### State Management
+- Created `puzzleStore.ts` using Svelte writable stores.
+- Manages `selectedCell` (row, col), `direction` (across/down), and `playerGrid` (user inputs).
+- Derived stores for `currentWord` (highlighting) and `currentClueNumber` (sync).
+
+#### Components
+- **CrosswordGrid**:
+  - Added click selection and keyboard handling (A-Z, Arrows, Backspace, Tab).
+  - Fixed event bubbling issue where keys fired twice (removed handler from container).
+  - Fixed reactivity issue where values didn't render (switched to explicit reactive variable).
+- **ClueList**:
+  - Highlight active clue based on store state.
+  - Auto-scroll to active clue.
+  - Click clue to select cell.
+
+#### Verification
+- **Playwright Tests**: `e2e/interactive-grid.spec.ts` (14 tests).
+  - Verified clicking, typing, navigation, deletion, and clue syncing.
+  - All tests passed.
+- **Manual**: Confirmed inputs work and layout is stable.
+
+Milestone 4 complete!
