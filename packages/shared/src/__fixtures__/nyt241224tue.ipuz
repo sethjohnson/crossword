@@ -1,0 +1,854 @@
+{
+  "version": "http://ipuz.org/v2",
+  "kind": [
+    "http://ipuz.org/crossword#1"
+  ],
+  "dimensions": {
+    "width": 15,
+    "height": 15
+  },
+  "title": "New York Times, Tuesday, December 24, 2024",
+  "author": "Sarah Sinclair",
+  "copyright": "© 2024, The New York Times",
+  "puzzle": [
+    [
+      1,
+      2,
+      3,
+      4,
+      5,
+      "#",
+      "#",
+      6,
+      7,
+      8,
+      9,
+      "#",
+      10,
+      11,
+      12
+    ],
+    [
+      13,
+      0,
+      0,
+      0,
+      0,
+      14,
+      "#",
+      15,
+      0,
+      0,
+      0,
+      16,
+      0,
+      0,
+      0
+    ],
+    [
+      17,
+      0,
+      0,
+      0,
+      0,
+      0,
+      "#",
+      18,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      19,
+      0,
+      0,
+      "#",
+      20,
+      0,
+      21,
+      0,
+      "#",
+      22,
+      0,
+      0,
+      "#",
+      "#",
+      "#"
+    ],
+    [
+      23,
+      0,
+      0,
+      24,
+      0,
+      0,
+      0,
+      "#",
+      25,
+      0,
+      0,
+      0,
+      26,
+      27,
+      28
+    ],
+    [
+      29,
+      0,
+      0,
+      0,
+      "#",
+      "#",
+      30,
+      31,
+      0,
+      "#",
+      32,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      "#",
+      "#",
+      "#",
+      33,
+      34,
+      35,
+      "#",
+      36,
+      0,
+      37,
+      0,
+      "#",
+      38,
+      0,
+      0
+    ],
+    [
+      "#",
+      39,
+      40,
+      0,
+      0,
+      0,
+      41,
+      0,
+      0,
+      0,
+      0,
+      42,
+      0,
+      0,
+      "#"
+    ],
+    [
+      43,
+      0,
+      0,
+      "#",
+      44,
+      0,
+      0,
+      0,
+      "#",
+      45,
+      0,
+      0,
+      "#",
+      "#",
+      "#"
+    ],
+    [
+      46,
+      0,
+      0,
+      47,
+      0,
+      "#",
+      48,
+      0,
+      49,
+      "#",
+      "#",
+      50,
+      51,
+      52,
+      53
+    ],
+    [
+      54,
+      0,
+      0,
+      0,
+      0,
+      55,
+      0,
+      "#",
+      56,
+      57,
+      58,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      "#",
+      "#",
+      "#",
+      59,
+      0,
+      0,
+      "#",
+      60,
+      0,
+      0,
+      0,
+      "#",
+      61,
+      0,
+      0
+    ],
+    [
+      62,
+      63,
+      64,
+      0,
+      0,
+      0,
+      65,
+      0,
+      "#",
+      66,
+      0,
+      67,
+      0,
+      0,
+      0
+    ],
+    [
+      68,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      "#",
+      69,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      70,
+      0,
+      0,
+      "#",
+      71,
+      0,
+      0,
+      0,
+      "#",
+      "#",
+      72,
+      0,
+      0,
+      0,
+      0
+    ]
+  ],
+  "solution": [
+    [
+      "S",
+      "H",
+      "E",
+      "E",
+      "P",
+      "#",
+      "#",
+      "E",
+      "A",
+      "R",
+      "S",
+      "#",
+      "T",
+      "K",
+      "O"
+    ],
+    [
+      "T",
+      "E",
+      "X",
+      "T",
+      "E",
+      "D",
+      "#",
+      "T",
+      "H",
+      "A",
+      "T",
+      "S",
+      "A",
+      "I",
+      "D"
+    ],
+    [
+      "E",
+      "S",
+      "C",
+      "A",
+      "P",
+      "E",
+      "#",
+      "C",
+      "A",
+      "N",
+      "E",
+      "T",
+      "O",
+      "A",
+      "D"
+    ],
+    [
+      "A",
+      "T",
+      "E",
+      "#",
+      "P",
+      "A",
+      "T",
+      "H",
+      "#",
+      "I",
+      "P",
+      "O",
+      "#",
+      "#",
+      "#"
+    ],
+    [
+      "L",
+      "I",
+      "P",
+      "B",
+      "A",
+      "L",
+      "M",
+      "#",
+      "O",
+      "N",
+      "D",
+      "R",
+      "A",
+      "F",
+      "T"
+    ],
+    [
+      "S",
+      "A",
+      "T",
+      "E",
+      "#",
+      "#",
+      "Z",
+      "E",
+      "D",
+      "#",
+      "A",
+      "M",
+      "B",
+      "E",
+      "R"
+    ],
+    [
+      "#",
+      "#",
+      "#",
+      "N",
+      "D",
+      "A",
+      "#",
+      "L",
+      "O",
+      "O",
+      "N",
+      "#",
+      "L",
+      "A",
+      "Y"
+    ],
+    [
+      "#",
+      "T",
+      "H",
+      "E",
+      "N",
+      "U",
+      "T",
+      "C",
+      "R",
+      "A",
+      "C",
+      "K",
+      "E",
+      "R",
+      "#"
+    ],
+    [
+      "T",
+      "A",
+      "U",
+      "#",
+      "A",
+      "G",
+      "U",
+      "A",
+      "#",
+      "F",
+      "E",
+      "E",
+      "#",
+      "#",
+      "#"
+    ],
+    [
+      "O",
+      "R",
+      "E",
+      "O",
+      "S",
+      "#",
+      "S",
+      "P",
+      "Y",
+      "#",
+      "#",
+      "R",
+      "H",
+      "E",
+      "A"
+    ],
+    [
+      "P",
+      "A",
+      "Y",
+      "C",
+      "A",
+      "S",
+      "H",
+      "#",
+      "E",
+      "W",
+      "G",
+      "R",
+      "O",
+      "S",
+      "S"
+    ],
+    [
+      "#",
+      "#",
+      "#",
+      "H",
+      "M",
+      "M",
+      "#",
+      "O",
+      "S",
+      "H",
+      "A",
+      "#",
+      "O",
+      "P",
+      "I"
+    ],
+    [
+      "E",
+      "U",
+      "R",
+      "O",
+      "P",
+      "E",
+      "A",
+      "N",
+      "#",
+      "U",
+      "T",
+      "O",
+      "P",
+      "I",
+      "A"
+    ],
+    [
+      "O",
+      "N",
+      "E",
+      "A",
+      "L",
+      "A",
+      "R",
+      "M",
+      "#",
+      "P",
+      "O",
+      "L",
+      "L",
+      "E",
+      "N"
+    ],
+    [
+      "N",
+      "O",
+      "D",
+      "#",
+      "E",
+      "R",
+      "I",
+      "E",
+      "#",
+      "#",
+      "R",
+      "E",
+      "A",
+      "D",
+      "S"
+    ]
+  ],
+  "clues": {
+    "Across": [
+      [
+        1,
+        "Image on a \"Fleece Navidad\" sweater, perhaps"
+      ],
+      [
+        6,
+        "Elves have pointy ones"
+      ],
+      [
+        10,
+        "Ref's ring ruling"
+      ],
+      [
+        13,
+        "Exchanged messages, say"
+      ],
+      [
+        15,
+        "\"Nevertheless ...\""
+      ],
+      [
+        17,
+        "Word before room or key"
+      ],
+      [
+        18,
+        "Invasive amphibian introduced to Australia in the 1930s"
+      ],
+      [
+        19,
+        "Enjoyed a gingerbread man, say"
+      ],
+      [
+        20,
+        "One might be made with a snow shovel"
+      ],
+      [
+        22,
+        "Wall St. debut"
+      ],
+      [
+        23,
+        "Moisturizing stick"
+      ],
+      [
+        25,
+        "Available from a keg"
+      ],
+      [
+        29,
+        "Appease, as hunger"
+      ],
+      [
+        30,
+        "Alphabet ender, in Britain"
+      ],
+      [
+        32,
+        "Fossilized tree resin"
+      ],
+      [
+        33,
+        "Confidentiality contract, for short"
+      ],
+      [
+        36,
+        "Bird on the Canadian dollar coin"
+      ],
+      [
+        38,
+        "Place, as a wager"
+      ],
+      [
+        39,
+        "Classic ballet set on Christmas Eve, with a hint to four black squares in this puzzle"
+      ],
+      [
+        43,
+        "τ"
+      ],
+      [
+        44,
+        "Lago contents"
+      ],
+      [
+        45,
+        "Ticketmaster add-on"
+      ],
+      [
+        46,
+        "Deep-fried cookies at a county fair"
+      ],
+      [
+        48,
+        "Mole"
+      ],
+      [
+        50,
+        "Mother of Zeus"
+      ],
+      [
+        54,
+        "What you may have to do if someone doesn't take charge?"
+      ],
+      [
+        56,
+        "\"That's disgusting!\""
+      ],
+      [
+        59,
+        "\"Let me think ...\""
+      ],
+      [
+        60,
+        "Office monitor, in brief"
+      ],
+      [
+        61,
+        "Nail polish brand with \"Funny Bunny\" and \"Bubble Bath\" shades"
+      ],
+      [
+        62,
+        "Latvian or Liechtensteiner"
+      ],
+      [
+        66,
+        "Perfect world"
+      ],
+      [
+        68,
+        "Mild chili designation"
+      ],
+      [
+        69,
+        "What some bees collect in special \"baskets\" on their legs"
+      ],
+      [
+        70,
+        "\"And giving a ___, up the chimney he rose\" (\"A Visit From St. Nicholas\" excerpt)"
+      ],
+      [
+        71,
+        "Great Lake with the shortest name"
+      ],
+      [
+        72,
+        "Books it?"
+      ]
+    ],
+    "Down": [
+      [
+        1,
+        "Amazing bargains"
+      ],
+      [
+        2,
+        "Greek goddess of the hearth"
+      ],
+      [
+        3,
+        "Not counting"
+      ],
+      [
+        4,
+        "Uber calculation, for short"
+      ],
+      [
+        5,
+        "Title pig of children's TV"
+      ],
+      [
+        6,
+        "Make an engraving"
+      ],
+      [
+        7,
+        "Sound of an epiphany"
+      ],
+      [
+        8,
+        "Entered hurriedly"
+      ],
+      [
+        9,
+        "Irish jig, for one"
+      ],
+      [
+        10,
+        "\"The ___ of Pooh\" (Benjamin Hoff book)"
+      ],
+      [
+        11,
+        "Seoul-based automaker"
+      ],
+      [
+        12,
+        "\"That's strange ...\""
+      ],
+      [
+        14,
+        "\"You're on!\""
+      ],
+      [
+        16,
+        "Seattle team with which Sue Bird won four W.N.B.A. championships"
+      ],
+      [
+        21,
+        "Celebrity gossip site"
+      ],
+      [
+        24,
+        "\"Molto ___\""
+      ],
+      [
+        25,
+        "Something carbon monoxide lacks"
+      ],
+      [
+        26,
+        "Partner of ready and willing"
+      ],
+      [
+        27,
+        "Subject of a famous F.D.R. quote"
+      ],
+      [
+        28,
+        "Have a go at"
+      ],
+      [
+        31,
+        "Yosemite peak, familiarly"
+      ],
+      [
+        34,
+        "Something collected for genealogy testing"
+      ],
+      [
+        35,
+        "Last mo. of summer vacation"
+      ],
+      [
+        37,
+        "Lummox"
+      ],
+      [
+        39,
+        "Skater Lipinski"
+      ],
+      [
+        40,
+        "Singer Lewis with a cameo in \"Back to the Future\""
+      ],
+      [
+        41,
+        "___ Push (N.F.L. play also known as the Brotherly Shove)"
+      ],
+      [
+        42,
+        "Deborah of \"The King and I\""
+      ],
+      [
+        43,
+        "Toy that spins"
+      ],
+      [
+        47,
+        "Astronaut Ellen who was the first Hispanic woman in space"
+      ],
+      [
+        49,
+        "\"Can I help you?\""
+      ],
+      [
+        51,
+        "Ado"
+      ],
+      [
+        52,
+        "Caught a glimpse of"
+      ],
+      [
+        53,
+        "\"Crazy Rich ___\" (hit 2018 film)"
+      ],
+      [
+        55,
+        "Calumniate"
+      ],
+      [
+        57,
+        "Trounce, informally"
+      ],
+      [
+        58,
+        "College athlete who plays in \"The Swamp\""
+      ],
+      [
+        60,
+        "Treater's words"
+      ],
+      [
+        62,
+        "Ages and ages"
+      ],
+      [
+        63,
+        "Game with Draw 4 cards"
+      ],
+      [
+        64,
+        "Color associated with Santa since an 1881 Thomas Nast cartoon"
+      ],
+      [
+        65,
+        "NPR host Shapiro"
+      ],
+      [
+        67,
+        "Repeated exclamation in the song \"Hot Hot Hot\""
+      ]
+    ]
+  },
+  "x-overlay": "data:image/png;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEDcf8aDCZOwgCi4AAAAAElFTkSuQmCC"
+}
