@@ -147,3 +147,31 @@ Milestone 4 complete!
   - All 18 E2E tests passed.
 
 Milestone 5 complete!
+
+## 2025-12-27 22:50 — Milestone 6: Puzzle Upload API (Server)
+
+### Implementation Log
+
+#### Infrastructure (Server)
+- Installed `multer` (uploads), `express-rate-limit` (security), `uuid`.
+- Configured Redis client in `src/services/redis.ts`.
+- Updated `src/index.ts` to mount API routes.
+
+#### API Endpoint: `POST /api/puzzle`
+- Accepts `multipart/form-data` with `.ipuz` or `.json` file.
+- Validates file size (max 1MB) and rate limits (5 req/min/IP).
+- Parses JSON and validates schema using shared `parseIPUZ`.
+- Generates stable UUIDv4.
+- Stores puzzle in Redis at `puzzle:{id}`.
+- Returns `{ id, shareUrl }`.
+
+#### Verification
+- **Integration Tests**: `tests/puzzle.test.ts` (using `supertest`).
+  - Verified success path (201 Created).
+  - Verified error cases: no file, invalid JSON, invalid iPUZ schema (400 Bad Request).
+- **Manual**:
+  - Started local Redis via Docker Compose.
+  - Verified upload using `curl` with `mini.ipuz` fixture.
+  - Received valid ID and 201 response.
+
+Milestone 6 complete!
