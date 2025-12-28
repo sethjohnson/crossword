@@ -76,3 +76,23 @@ schemas/ipuz |  100.00 |   100.00 |  100.00 |  100.00
 ```
 
 Milestone 2 complete!
+
+## 2025-12-27 21:45 — Starting Milestone 3: Static Grid Rendering
+
+### Implementation Log
+
+#### Components Created
+- `CrosswordGrid.svelte`: Renders the 15x15 grid using CSS Grid. Handles styled cells and block cells. Responsive design maintains square aspect ratio.
+- `ClueList.svelte`: Displays scrollable Across and Down clue columns. Stacks on mobile.
+- `App.svelte`: Main layout integrating grid and list.
+
+#### Data Integration
+- Copied `nyt241223mon.ipuz` from shared fixtures to `client/src/assets/puzzle.json`.
+- Used `parseIPUZ` from `@crossword/shared` to type-safe load the puzzle.
+
+#### Verification
+- **Playwright Tests**: Created `e2e/grid-rendering.spec.ts`.
+- **Results**: 6/6 tests passed verifying title, grid count (225 cells), numbers, and clue visibility.
+- **Visual**: Verified correct layout and responsiveness via browser tool.
+
+Milestone 3 complete!

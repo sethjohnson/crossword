@@ -1,18 +1,45 @@
 <script lang="ts">
-  import { VERSION } from '@crossword/shared';
+  import { VERSION, parseIPUZ } from '@crossword/shared';
+  import CrosswordGrid from './components/CrosswordGrid.svelte';
+  import ClueList from './components/ClueList.svelte';
+  import samplePuzzleData from './assets/puzzle.json';
+
+  // Parse the sample puzzle
+  const puzzle = parseIPUZ(samplePuzzleData);
 </script>
 
-<section class="hero is-primary is-fullheight">
+<section class="hero is-primary">
   <div class="hero-body">
-    <div class="container has-text-centered">
-      <h1 class="title is-1">🧩 Crossword</h1>
-      <h2 class="subtitle is-4">Real-time collaborative puzzles with friends</h2>
-      <p class="is-size-6 has-text-grey-light">Version {VERSION}</p>
-      <div class="buttons is-centered mt-6">
-        <button class="button is-light is-large">
-          Upload Puzzle
-        </button>
+    <div class="container">
+      <h1 class="title">🧩 Crossword</h1>
+      <h2 class="subtitle">
+        {puzzle.title || 'Untitled Puzzle'} <span class="tag is-dark ml-2">v{VERSION}</span>
+      </h2>
+      <p class="is-size-7">By {puzzle.author || 'Unknown'}</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="columns is-desktop">
+      <!-- Grid Column -->
+      <div class="column is-two-thirds-desktop">
+        <div class="box">
+          <CrosswordGrid {puzzle} />
+        </div>
+      </div>
+
+      <!-- Clues Column -->
+      <div class="column is-one-third-desktop">
+        <div class="box">
+          <ClueList clues={puzzle.clues} />
+        </div>
       </div>
     </div>
   </div>
 </section>
+
+<style>
+  /* Additional global styles if needed */
+</style>
