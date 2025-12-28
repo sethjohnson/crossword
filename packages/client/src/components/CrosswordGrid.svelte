@@ -11,10 +11,12 @@
   import { onMount } from 'svelte';
 
   export let puzzle: CrosswordPuzzle;
+  export let initialGrid: Record<string, { value: string; playerId: string }> | undefined =
+    undefined;
 
   // Initialize store with puzzle on mount
   onMount(() => {
-    puzzleStore.loadPuzzle(puzzle);
+    puzzleStore.loadPuzzle(puzzle, initialGrid);
   });
 
   // Calculate grid styles based on dimensions

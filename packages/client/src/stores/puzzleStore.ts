@@ -28,10 +28,15 @@ function createPuzzleStore() {
     return {
         subscribe,
 
-        // Initialize with a puzzle
-        loadPuzzle(puzzle: CrosswordPuzzle) {
-            const playerGrid = puzzle.puzzle.map((row) =>
-                row.map((cell) => (isBlock(cell) ? '#' : ''))
+        // Initialize with a puzzle (optionally with saved grid state)
+        loadPuzzle(puzzle: CrosswordPuzzle, initialGrid?: Record<string, { value: string; playerId: string }>) {
+            const playerGrid = puzzle.puzzle.map((row, rowIdx) =>
+                row.map((cell, colIdx) => {
+                    if (isBlock(cell)) return '#';
+                    // Check for saved value
+                    const saved = initialGrid?.[`${rowIdx},${colIdx}`];
+                    return saved?.value || '';
+                })
             );
             set({
                 puzzle,

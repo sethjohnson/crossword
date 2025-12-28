@@ -84,7 +84,16 @@ router.get('/:id', async (req, res) => {
             return res.status(404).json({ error: 'Puzzle not found' });
         }
 
-        res.json(JSON.parse(data));
+        const puzzle = JSON.parse(data);
+
+        // Fetch game state (grid progress) if it exists
+        const gameGridJson = await redis.hget(`game:${id}`, 'grid');
+        const gameState = gameGridJson ? { grid: JSON.parse(gameGridJson) } : null;
+
+        res.json({
+            ...puzzle,
+            gameState,
+        });
     } catch (error) {
         console.error('Fetch Error:', error);
         res.status(500).json({ error: 'Internal server error' });

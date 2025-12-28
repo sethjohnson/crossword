@@ -16,6 +16,7 @@
   let error = '';
   let completionShown = false;
   let showCompletion = false;
+  let gameState: Record<string, { value: string; playerId: string }> | null = null;
 
   // Watch for route changes
   $: if ($router.puzzleId) {
@@ -45,6 +46,7 @@
     isLoading = true;
     error = '';
     puzzle = null;
+    gameState = null;
     completionShown = false;
 
     try {
@@ -57,7 +59,10 @@
       }
 
       const data = await response.json();
-      puzzle = data as CrosswordPuzzle;
+      // Extract gameState from response
+      const { gameState: gs, ...puzzleData } = data;
+      puzzle = puzzleData as CrosswordPuzzle;
+      gameState = gs?.grid || null;
     } catch (e: any) {
       error = e.message || 'Failed to load puzzle';
     } finally {
@@ -149,7 +154,7 @@
         <!-- Grid Column -->
         <div class="column is-two-thirds-desktop">
           <div class="box">
-            <CrosswordGrid {puzzle} />
+            <CrosswordGrid {puzzle} initialGrid={gameState ?? undefined} />
           </div>
         </div>
 

@@ -278,3 +278,22 @@ Milestone 9 complete!
 - All 6 E2E tests passing.
 
 Milestone 10 complete!
+
+## 2025-12-28 00:10 — Milestone 11: Session Persistence & Rejoin
+
+### Implementation Log
+
+#### Server
+- GET `/api/puzzle/:id` fetches `game:{id}` from Redis.
+- Includes `gameState.grid` in response if exists.
+
+#### Client
+- `loadPuzzle` accepts optional `initialGrid`.
+- Applies saved cell values to playerGrid.
+- App.svelte stores and passes gameState to CrosswordGrid.
+
+#### Verification
+- Browser subagent confirmed: fill cells → close tab → reopen → state restored.
+- All 6 E2E tests passing.
+
+Milestone 11 complete!
