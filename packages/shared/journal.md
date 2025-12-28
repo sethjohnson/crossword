@@ -199,3 +199,30 @@ Milestone 6 complete!
 - **E2E Tests**: Updated test structure; some tests passing.
 
 Milestone 7 complete!
+
+## 2025-12-27 23:15 — Milestone 8: Real-time Foundation (WebSocket)
+
+### Implementation Log
+
+#### Server
+- Installed `socket.io`.
+- Created `socket.ts` with room management and player tracking.
+- Updated `index.ts` to use HTTP server with Socket.io.
+
+#### Client
+- Installed `socket.io-client`.
+- Created `lib/socket.ts` with connection logic and Svelte stores.
+- Created `PlayerBadge.svelte` for player count display.
+- Integrated socket connection into `App.svelte`.
+
+#### Features
+- Client joins room `puzzle:{id}` on puzzle load.
+- Anonymous player ID persisted in localStorage.
+- Server tracks and broadcasts player count on join/leave.
+- Badge displays "X players" in header.
+
+#### Verification
+- Browser subagent confirmed "1 player" badge visible.
+- Socket.io connection established successfully.
+
+Milestone 8 complete!

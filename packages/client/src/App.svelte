@@ -1,11 +1,14 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import { VERSION, parseIPUZ, type CrosswordPuzzle } from '@crossword/shared';
   import CrosswordGrid from './components/CrosswordGrid.svelte';
   import ClueList from './components/ClueList.svelte';
   import CompletionModal from './components/CompletionModal.svelte';
   import UploadZone from './components/UploadZone.svelte';
+  import PlayerBadge from './components/PlayerBadge.svelte';
   import { puzzleStore, isComplete } from './stores/puzzleStore';
   import { router } from './lib/router';
+  import { connectToRoom, disconnect } from './lib/socket';
 
   // State
   let puzzle: CrosswordPuzzle | null = null;
@@ -17,9 +20,16 @@
   // Watch for route changes
   $: if ($router.puzzleId) {
     loadPuzzle($router.puzzleId);
+    connectToRoom($router.puzzleId);
   } else {
     puzzle = null;
+    disconnect();
   }
+
+  // Cleanup on destroy
+  onDestroy(() => {
+    disconnect();
+  });
 
   // Watch for completion
   $: if ($isComplete && !completionShown && puzzle) {
@@ -98,6 +108,7 @@
         </div>
         <div class="level-right">
           <div class="level-item">
+            <PlayerBadge />
             <div class="buttons">
               {#if puzzle}
                 <button class="button is-warning" on:click={handleCheck}> ✓ Check </button>

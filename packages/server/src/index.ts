@@ -1,11 +1,16 @@
 import express from 'express';
 import cors from 'cors';
+import { createServer } from 'http';
 import { VERSION } from '@crossword/shared';
+import { initializeSocket } from './socket.js';
+
+import puzzleRouter from './routes/puzzle.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-import puzzleRouter from './routes/puzzle.js';
+// Create HTTP server for Socket.io
+const httpServer = createServer(app);
 
 // Middleware
 app.use(cors());
@@ -23,12 +28,16 @@ app.get('/health', (_req, res) => {
     });
 });
 
+// Initialize Socket.io
+const io = initializeSocket(httpServer);
+
 // Start server if not in test mode
 if (process.env.NODE_ENV !== 'test') {
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
         console.log(`📋 Health check: http://localhost:${PORT}/health`);
+        console.log(`🔌 WebSocket ready`);
     });
 }
 
-export { app };
+export { app, httpServer, io };
