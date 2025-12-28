@@ -1,43 +1,24 @@
-# Multi-stage Dockerfile for Crossword App
-# Stage 1: Build client and server
-FROM node:20-alpine AS builder
+# Simple Dockerfile for running pre-built server
+# Use when building locally and uploading dist/ folders
+
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY packages/client/package*.json ./packages/client/
-COPY packages/server/package*.json ./packages/server/
-COPY packages/shared/package*.json ./packages/shared/
+# Create workspace structure and minimal package.json files first
+RUN mkdir -p packages/server packages/shared packages/client
 
-# Install dependencies
-RUN npm ci
+# Create the package.json files for module resolution BEFORE installing deps
+RUN echo '{"name":"@crossword/shared","version":"0.0.1","type":"module","main":"dist/index.js","exports":{".":"./dist/index.js"}}' > packages/shared/package.json
+RUN echo '{"name":"@crossword/server","version":"0.0.1","type":"module","main":"dist/index.js"}' > packages/server/package.json
+RUN echo '{"name":"crossword","version":"0.0.1","type":"module","private":true,"workspaces":["packages/shared","packages/server"]}' > package.json
 
-# Copy source
-COPY packages/ ./packages/
-COPY tsconfig*.json ./
+# Copy pre-built dist files
+COPY dist/server/ ./packages/server/dist/
+COPY dist/shared/ ./packages/shared/dist/
 
-# Build shared, client, and server
-RUN npm run build -w @crossword/shared
-RUN npm run build -w @crossword/client
-RUN npm run build -w @crossword/server
-
-# Stage 2: Production runtime
-FROM node:20-alpine AS runtime
-
-WORKDIR /app
-
-# Copy package files for production install
-COPY package*.json ./
-COPY packages/server/package*.json ./packages/server/
-COPY packages/shared/package*.json ./packages/shared/
-
-# Install production dependencies only
-RUN npm ci --omit=dev
-
-# Copy built files
-COPY --from=builder /app/packages/server/dist ./packages/server/dist
-COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+# Install ALL production dependencies (including zod for shared package)
+RUN npm install zod ioredis express multer express-rate-limit uuid socket.io cors --omit=dev
 
 # Environment
 ENV NODE_ENV=production
