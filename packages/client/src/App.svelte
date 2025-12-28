@@ -1,22 +1,58 @@
 <script lang="ts">
-  import { VERSION, parseIPUZ } from '@crossword/shared';
+  import { VERSION, parseIPUZ, type CrosswordPuzzle } from '@crossword/shared';
   import CrosswordGrid from './components/CrosswordGrid.svelte';
   import ClueList from './components/ClueList.svelte';
   import CompletionModal from './components/CompletionModal.svelte';
+  import UploadZone from './components/UploadZone.svelte';
   import { puzzleStore, isComplete } from './stores/puzzleStore';
-  import samplePuzzleData from './assets/puzzle.json';
+  import { router } from './lib/router';
 
-  // Parse the sample puzzle
-  const puzzle = parseIPUZ(samplePuzzleData);
-
-  // Track if completion modal was shown (so we only show once)
+  // State
+  let puzzle: CrosswordPuzzle | null = null;
+  let isLoading = false;
+  let error = '';
   let completionShown = false;
   let showCompletion = false;
 
+  // Watch for route changes
+  $: if ($router.puzzleId) {
+    loadPuzzle($router.puzzleId);
+  } else {
+    puzzle = null;
+  }
+
   // Watch for completion
-  $: if ($isComplete && !completionShown) {
+  $: if ($isComplete && !completionShown && puzzle) {
     showCompletion = true;
     completionShown = true;
+  }
+
+  async function loadPuzzle(id: string) {
+    isLoading = true;
+    error = '';
+    puzzle = null;
+    completionShown = false;
+
+    try {
+      const response = await fetch(`/api/puzzle/${id}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Puzzle not found');
+        }
+        throw new Error('Failed to load puzzle');
+      }
+
+      const data = await response.json();
+      puzzle = data as CrosswordPuzzle;
+    } catch (e: any) {
+      error = e.message || 'Failed to load puzzle';
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function handleUploadSuccess(id: string) {
+    router.navigate(`puzzle/${id}`);
   }
 
   function handleCheck() {
@@ -32,6 +68,10 @@
   function handleCloseCompletion() {
     showCompletion = false;
   }
+
+  function goToUpload() {
+    router.navigate('');
+  }
 </script>
 
 <section class="hero is-primary">
@@ -42,18 +82,30 @@
           <div class="level-item">
             <div>
               <h1 class="title">🧩 Crossword</h1>
-              <h2 class="subtitle">
-                {puzzle.title || 'Untitled Puzzle'} <span class="tag is-dark ml-2">v{VERSION}</span>
-              </h2>
-              <p class="is-size-7">By {puzzle.author || 'Unknown'}</p>
+              {#if puzzle}
+                <h2 class="subtitle">
+                  {puzzle.title || 'Untitled Puzzle'}
+                  <span class="tag is-dark ml-2">v{VERSION}</span>
+                </h2>
+                <p class="is-size-7">By {puzzle.author || 'Unknown'}</p>
+              {:else}
+                <h2 class="subtitle">
+                  Play Together <span class="tag is-dark ml-2">v{VERSION}</span>
+                </h2>
+              {/if}
             </div>
           </div>
         </div>
         <div class="level-right">
           <div class="level-item">
             <div class="buttons">
-              <button class="button is-warning" on:click={handleCheck}> ✓ Check </button>
-              <button class="button is-danger is-light" on:click={handleReveal}> 👁 Reveal </button>
+              {#if puzzle}
+                <button class="button is-warning" on:click={handleCheck}> ✓ Check </button>
+                <button class="button is-danger is-light" on:click={handleReveal}>
+                  👁 Reveal
+                </button>
+                <button class="button is-light" on:click={goToUpload}> 📤 New Puzzle </button>
+              {/if}
             </div>
           </div>
         </div>
@@ -64,21 +116,46 @@
 
 <section class="section">
   <div class="container">
-    <div class="columns is-desktop">
-      <!-- Grid Column -->
-      <div class="column is-two-thirds-desktop">
-        <div class="box">
-          <CrosswordGrid {puzzle} />
-        </div>
+    {#if isLoading}
+      <div class="has-text-centered py-6">
+        <span class="icon is-large">
+          <i class="fas fa-spinner fa-spin fa-3x"></i>
+        </span>
+        <p class="mt-4 is-size-5">Loading puzzle...</p>
       </div>
+    {:else if error}
+      <div class="notification is-danger">
+        <strong>Error:</strong>
+        {error}
+        <button class="button is-small is-light ml-4" on:click={goToUpload}> Go Back </button>
+      </div>
+    {:else if puzzle}
+      <div class="columns is-desktop">
+        <!-- Grid Column -->
+        <div class="column is-two-thirds-desktop">
+          <div class="box">
+            <CrosswordGrid {puzzle} />
+          </div>
+        </div>
 
-      <!-- Clues Column -->
-      <div class="column is-one-third-desktop">
-        <div class="box">
-          <ClueList clues={puzzle.clues} />
+        <!-- Clues Column -->
+        <div class="column is-one-third-desktop">
+          <div class="box">
+            <ClueList clues={puzzle.clues} />
+          </div>
         </div>
       </div>
-    </div>
+    {:else}
+      <!-- Upload View -->
+      <div class="columns is-centered">
+        <div class="column is-half">
+          <div class="box">
+            <h2 class="title is-4 has-text-centered mb-5">Upload a Puzzle</h2>
+            <UploadZone onUploadSuccess={handleUploadSuccess} />
+          </div>
+        </div>
+      </div>
+    {/if}
   </div>
 </section>
 

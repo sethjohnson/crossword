@@ -74,4 +74,21 @@ router.post('/', uploadLimiter, upload.single('puzzle'), async (req, res) => {
     }
 });
 
+// GET /api/puzzle/:id - Retrieve puzzle by ID
+router.get('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = await redis.get(`puzzle:${id}`);
+
+        if (!data) {
+            return res.status(404).json({ error: 'Puzzle not found' });
+        }
+
+        res.json(JSON.parse(data));
+    } catch (error) {
+        console.error('Fetch Error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 export default router;

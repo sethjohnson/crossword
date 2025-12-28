@@ -1,79 +1,82 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, request } from '@playwright/test';
+
+// Valid minimal puzzle for tests
+const testPuzzle = {
+    version: "http://ipuz.org/v2",
+    kind: ["http://ipuz.org/crossword#1"],
+    dimensions: { width: 5, height: 5 },
+    puzzle: [
+        [1, 2, 3, 4, 5],
+        [6, 0, 0, 0, '#'],
+        [7, 0, '#', 0, 8],
+        ['#', 0, 9, 0, 0],
+        [10, 0, 0, 0, 0]
+    ],
+    solution: [
+        ['O', 'R', 'B', 'I', 'T'],
+        ['R', 'A', 'T', 'E', '#'],
+        ['A', 'N', '#', 'G', 'O'],
+        ['#', 'G', 'E', 'G', 'S'],
+        ['S', 'E', 'T', 'S', 'S']
+    ],
+    clues: {
+        Across: [[1, 'Space path'], [6, 'Speed'], [7, 'Article'], [9, 'Easter item'], [10, 'Groups']],
+        Down: [[1, 'Citrus'], [2, 'Range'], [3, 'Wager'], [4, 'Bird sound'], [5, 'Letters']]
+    }
+};
 
 test.describe('Check and Reveal', () => {
+    let puzzleId: string;
+
+    test.beforeAll(async ({ }, testInfo) => {
+        const apiContext = await request.newContext({ baseURL: 'http://localhost:3000' });
+        const response = await apiContext.post('/api/puzzle', {
+            multipart: {
+                puzzle: {
+                    name: 'test.ipuz',
+                    mimeType: 'application/json',
+                    buffer: Buffer.from(JSON.stringify(testPuzzle)),
+                }
+            }
+        });
+        const data = await response.json();
+        puzzleId = data.id;
+        await apiContext.dispose();
+    });
+
     test.beforeEach(async ({ page }) => {
-        await page.goto('/');
+        await page.goto(`/#puzzle/${puzzleId}`);
         await expect(page.locator('.crossword-grid')).toBeVisible();
     });
 
     test('Check button marks incorrect cells', async ({ page }) => {
-        // Type a wrong letter in first cell
         await page.locator('.cell[data-row="0"][data-col="0"]').click();
         await page.keyboard.press('X');
-
-        // Click Check button
         await page.getByRole('button', { name: /Check/ }).click();
-
-        // First cell should be marked incorrect (solution is 'O')
-        await expect(
-            page.locator('.cell[data-row="0"][data-col="0"]')
-        ).toHaveClass(/is-incorrect/);
+        await expect(page.locator('.cell[data-row="0"][data-col="0"]')).toHaveClass(/is-incorrect/);
     });
 
     test('Reveal button fills grid with solution', async ({ page }) => {
-        // Override confirm to auto-accept
-        await page.evaluate(() => {
-            window.confirm = () => true;
-        });
-
-        // Click Reveal button
+        await page.evaluate(() => { window.confirm = () => true; });
         await page.getByRole('button', { name: /Reveal/ }).click();
-
-        // First cell should have solution value 'O'
-        await expect(
-            page.locator('.cell[data-row="0"][data-col="0"] .cell-value')
-        ).toHaveText('O');
-
-        // Check another cell (second cell, should be 'R')
-        await expect(
-            page.locator('.cell[data-row="0"][data-col="1"] .cell-value')
-        ).toHaveText('R');
+        await expect(page.locator('.cell[data-row="0"][data-col="0"] .cell-value')).toHaveText('O');
+        await expect(page.locator('.cell[data-row="0"][data-col="1"] .cell-value')).toHaveText('R');
     });
 
     test('Completion modal appears when puzzle is solved', async ({ page }) => {
-        // Override confirm to auto-accept
-        await page.evaluate(() => {
-            window.confirm = () => true;
-        });
-
-        // Click Reveal to complete the puzzle
+        await page.evaluate(() => { window.confirm = () => true; });
         await page.getByRole('button', { name: /Reveal/ }).click();
-
-        // Wait for completion modal
         await expect(page.locator('.modal.is-active')).toBeVisible();
         await expect(page.locator('.modal')).toContainText('Congratulations');
     });
 
     test('Check clears incorrect state when user edits cell', async ({ page }) => {
-        // Type a wrong letter
         await page.locator('.cell[data-row="0"][data-col="0"]').click();
         await page.keyboard.press('X');
-
-        // Check the puzzle
         await page.getByRole('button', { name: /Check/ }).click();
-
-        // Verify cell is marked incorrect
-        await expect(
-            page.locator('.cell[data-row="0"][data-col="0"]')
-        ).toHaveClass(/is-incorrect/);
-
-        // Go back to first cell and type correct letter
+        await expect(page.locator('.cell[data-row="0"][data-col="0"]')).toHaveClass(/is-incorrect/);
         await page.locator('.cell[data-row="0"][data-col="0"]').click();
         await page.keyboard.press('O');
-
-        // Incorrect state should be cleared
-        await expect(
-            page.locator('.cell[data-row="0"][data-col="0"]')
-        ).not.toHaveClass(/is-incorrect/);
+        await expect(page.locator('.cell[data-row="0"][data-col="0"]')).not.toHaveClass(/is-incorrect/);
     });
 });
