@@ -297,3 +297,25 @@ Milestone 10 complete!
 - All 6 E2E tests passing.
 
 Milestone 11 complete!
+
+## 2025-12-28 15:25 — Milestone 12: Production Deployment
+
+### Implementation Log
+
+#### Docker Setup
+- Created `Dockerfile` (multi-stage: build + runtime).
+- Created `docker-compose.yml` (server, redis, nginx).
+- Created `docker-compose.dev.yml` (Redis only for local dev).
+- Created `nginx.conf` (static + API/WebSocket proxy).
+- Created `.dockerignore` for faster builds.
+
+#### Documentation
+- Created `DEPLOYMENT.md` with Oracle Cloud context.
+- Deployment commands, RAM considerations, troubleshooting.
+
+#### Strategy
+- Build locally (1GB RAM can't handle React builds).
+- Upload pre-built files via rsync.
+- Deploy with `docker compose up -d`.
+
+Milestone 12 Docker configs complete!

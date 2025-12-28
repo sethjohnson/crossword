@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build outputs (handled by Docker build)
+**/dist
+
+# Development files
+.git
+.gitignore
+*.md
+!README.md
+
+# Test files
+e2e
+**/*.spec.ts
+**/*.test.ts
+playwright.config.ts
+playwright-report
+
+# IDE
+.vscode
+.idea
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local env files
+.env.local
+.env.*.local
