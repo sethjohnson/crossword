@@ -319,3 +319,19 @@ Milestone 11 complete!
 - Deploy with `docker compose up -d`.
 
 Milestone 12 Docker configs complete!
+
+### Deployment to Oracle Cloud
+
+#### Live URL: http://64.181.235.94
+
+#### Key Fix: crypto.randomUUID Polyfill
+- `crypto.randomUUID` only works in HTTPS contexts
+- Added polyfill to `packages/client/src/main.ts`
+- App now loads correctly over HTTP
+
+#### Containers Running
+- `crossword-server-1` - Node.js API + WebSocket
+- `crossword-nginx-1` - Static files + reverse proxy
+- `crossword-redis-1` - Game state storage
+
+All E2E tests passing. Milestone 12 complete!
