@@ -1,0 +1,16 @@
+{
+    order reverse_proxy before handle
+}
+
+crossword.sethalanjohnson.com {
+    encode gzip
+
+    reverse_proxy /api/* server:3001
+    reverse_proxy /socket.io/* server:3001
+
+    handle {
+        root * /srv/html
+        try_files {path} /index.html
+        file_server
+    }
+}
