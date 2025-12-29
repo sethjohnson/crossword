@@ -335,3 +335,23 @@ Milestone 12 Docker configs complete!
 - `crossword-redis-1` - Game state storage
 
 All E2E tests passing. Milestone 12 complete!
+
+---
+
+## PUZ File Support
+
+Added support for Across Lite `.puz` binary format.
+
+### Files Created/Modified
+- `packages/shared/src/parser/puz.ts` - Binary .puz parser
+- `packages/shared/src/index.ts` - Export puz parser
+- `packages/server/src/routes/puzzle.ts` - Auto-detect format by extension or magic bytes
+- `packages/client/src/components/UploadZone.svelte` - Accept .puz files
+
+### Parser Features
+- Binary header parsing (dimensions at 0x2C, 0x2D)
+- Grid extraction (`.` = black cells, letters for solution)
+- NUL-separated strings (title, author, copyright, clues)
+- Clue number derivation from grid shape (cells that start words)
+
+Deployed to production: https://crossword.sethalanjohnson.com
