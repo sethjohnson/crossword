@@ -14,8 +14,12 @@
     if (!file) return;
 
     // Validate file type
-    if (!file.name.endsWith('.ipuz') && !file.name.endsWith('.json')) {
-      errorMessage = 'Please upload a .ipuz or .json file';
+    if (
+      !file.name.endsWith('.ipuz') &&
+      !file.name.endsWith('.json') &&
+      !file.name.endsWith('.puz')
+    ) {
+      errorMessage = 'Please upload a .ipuz, .puz, or .json file';
       return;
     }
 
@@ -87,7 +91,7 @@
 >
   <input
     type="file"
-    accept=".ipuz,.json"
+    accept=".ipuz,.json,.puz"
     bind:this={fileInput}
     on:change={handleFileSelect}
     hidden
@@ -105,7 +109,7 @@
       <span class="icon is-large">
         <i class="fas fa-cloud-upload-alt fa-3x"></i>
       </span>
-      <p class="mt-3 is-size-5">Drop an iPUZ file here</p>
+      <p class="mt-3 is-size-5">Drop an iPUZ or PUZ file here</p>
       <p class="is-size-7 has-text-grey">or click to browse</p>
     </div>
   {/if}

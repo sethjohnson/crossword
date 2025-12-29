@@ -46,3 +46,4 @@ export {
 
 // Parser functions
 export { parseIPUZ, safeParseIPUZ, formatParseError } from './parser/ipuz.js';
+export { parsePuz, isPuzFile } from './parser/puz.js';

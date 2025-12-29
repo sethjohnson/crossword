@@ -2,7 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import { rateLimit } from 'express-rate-limit';
 import { v4 as uuidv4 } from 'uuid';
-import { parseIPUZ } from '@crossword/shared';
+import { parseIPUZ, parsePuz, isPuzFile } from '@crossword/shared';
 import { redis } from '../services/redis.js';
 
 const router = Router();
@@ -31,24 +31,39 @@ router.post('/', uploadLimiter, upload.single('puzzle'), async (req, res) => {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        // Parse buffer to JSON
-        let json;
-        try {
-            const fileContent = req.file.buffer.toString('utf-8');
-            json = JSON.parse(fileContent);
-        } catch (e) {
-            return res.status(400).json({ error: 'Invalid JSON file' });
-        }
-
-        // Validate using shared parser
         let puzzle;
-        try {
-            puzzle = parseIPUZ(json);
-        } catch (e: any) {
-            return res.status(400).json({
-                error: 'Invalid puzzle format',
-                details: e.message || 'Unknown validation error'
-            });
+        const filename = req.file.originalname?.toLowerCase() || '';
+        const buffer = req.file.buffer;
+
+        // Detect file type and parse accordingly
+        if (filename.endsWith('.puz') || isPuzFile(buffer)) {
+            // Parse as .puz file (binary Across Lite format)
+            try {
+                puzzle = parsePuz(buffer);
+            } catch (e: any) {
+                return res.status(400).json({
+                    error: 'Invalid .puz file',
+                    details: e.message || 'Unknown parsing error'
+                });
+            }
+        } else {
+            // Parse as iPUZ file (JSON format)
+            let json;
+            try {
+                const fileContent = buffer.toString('utf-8');
+                json = JSON.parse(fileContent);
+            } catch (e) {
+                return res.status(400).json({ error: 'Invalid JSON file' });
+            }
+
+            try {
+                puzzle = parseIPUZ(json);
+            } catch (e: any) {
+                return res.status(400).json({
+                    error: 'Invalid puzzle format',
+                    details: e.message || 'Unknown validation error'
+                });
+            }
         }
 
         // Generate stable ID
